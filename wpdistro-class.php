@@ -653,7 +653,6 @@ if ( ! class_exists( 'TGM_Plugin_Activation' ) ) {
 		public function install_plugins_page() {
 			// Store new instance of plugin table in object.
 			$plugin_table = new TGMPA_List_Table;
-
 			// Return early if processing a plugin installation action.
 			if ( ( ( 'tgmpa-bulk-install' === $plugin_table->current_action() || 'tgmpa-bulk-update' === $plugin_table->current_action() ) && $plugin_table->process_bulk_actions() ) || $this->do_plugin_install() ) {
 				return;
@@ -704,6 +703,7 @@ if ( ! class_exists( 'TGM_Plugin_Activation' ) ) {
 		 * @return boolean True on success, false on failure.
 		 */
 		protected function do_plugin_install() {
+			
 			if ( empty( $_GET['plugin'] ) ) {
 				return false;
 			}
@@ -3369,6 +3369,33 @@ if ( ! function_exists( 'tgmpa_load_bulk_installer' ) ) {
 					 * @param bool $bool The value we need to give back (true).
 					 * @return bool
 					 */
+
+					public function assign_plug($plugin_name){
+						global $wpdb;
+						$lulek = $wpdb->get_results("INSERT INTO wpd_options (option_id, option_name, option_value, autoload, optionPlugin)
+						SELECT wp_options.option_id, wp_options.option_name, wp_options.option_value, wp_options.autoload,  '". $plugin_name ."' AS 'optionPlugin' 
+						FROM   wp_options
+												LEFT OUTER JOIN wpd_options
+												  ON (wp_options.option_name = wpd_options.option_name)
+												  WHERE wpd_options.option_name IS NULL;");
+					}
+
+					public function check_plug(){
+						global $wpdb;
+						//$lelek = $wpdb->get_results("SELECT * FROM " . $wpdb->options);
+						//$lelek = $wpdb->get_results("SELECT * FROM " . $wpdb->options);
+						$lelek = $wpdb->get_row("SELECT COUNT(1) FROM information_schema.tables WHERE table_schema='wordpress' AND table_name='wpd_options';");
+						//var_dump($lelek["COUNT(1)"]);
+						foreach ( $lelek as $fivesdraft ) 
+						{
+							if($fivesdraft == 0){
+								$wpdb->get_results("CREATE TABLE wpd_options LIKE wp_options;");
+								$wpdb->get_results("ALTER TABLE wpd_options ADD COLUMN 'optionPlugin' VARCHAR(191) NOT NULL DEFAULT '';");
+								$wpdb->get_results("INSERT INTO wpd_options SELECT *, 'WordPress' AS 'optionPlugin' FROM wp_options;");
+							} 
+						}
+					}
+
 					public function auto_activate( $bool ) {
 						// Only process the activation of installed plugins if the automatic flag is set to true.
 						if ( $this->tgmpa->is_automatic ) {
@@ -3380,7 +3407,15 @@ if ( ! function_exists( 'tgmpa_load_bulk_installer' ) ) {
 
 							// Don't try to activate on upgrade of active plugin as WP will do this already.
 							if ( ! is_plugin_active( $plugin_info ) ) {
+								/*global $wpdb;
+								$lelek = $wpdb->get_results("SELECT * FROM " . $wpdb->options);
+								foreach ( $lelek as $fivesdraft ) 
+								{
+									echo $fivesdraft->post_title;
+								}*/
+								$this->check_plug();
 								$activate = activate_plugin( $plugin_info );
+								$this->assign_plug(get_plugin_data($plugin_info)["TextDomain"]);
 
 								// Adjust the success string based on the activation result.
 								$this->strings['process_success'] = $this->strings['process_success'] . "<br />\n";
