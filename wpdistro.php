@@ -12,6 +12,8 @@
 require_once dirname( __FILE__ ) . '/wpdistro-class.php';
 include 'userOptions.php';
 $a = new WPUserOptions();
+include 'newOptions.php';
+$b = new WPOptionsViewer();
 add_action( 'tgmpa_register', 'WPDistro_register_required_plugins' );
 function getPluginName()
 {

@@ -117,13 +117,13 @@ class WPUserOptions {
 
         $pluginList = get_option("wpdPluginList");
         $object = ["plugins" => $pluginList];
-        $url = 'http://127.0.0.1/getPluginConf.php?' . http_build_query($object);
+        $url = 'https://conf.wpdistro.cz/getPluginConf.php';
         echo http_build_query($pluginList);
 // use key 'http' even if you send the request to https://...
         $options = array(
             'http' => array(
                 'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'method'  => 'GET',
+                'method'  => 'POST',
                 'content' => http_build_query($pluginList)
             )
         );

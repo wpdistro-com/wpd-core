@@ -3,19 +3,19 @@ class WPOptionsViewer{
 public function __construct() {
     add_action('admin_menu', array($this, 'mynewtheme_add_admin'));
 }
-function startsWith($string, $startString)
+public function startsWith($string, $startString)
 {
     $len = strlen($startString);
     return (substr($string, 0, $len) === $startString);
 }
 
-function isAssoc(array $arr)
+public function isAssoc(array $arr)
 {
     if (array() === $arr) return false;
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
-function mynewtheme_add_admin()
+public function mynewtheme_add_admin()
 {
     global $themename, $shortname, $options, $spawned_options, $wpdb;
 
@@ -76,28 +76,28 @@ function mynewtheme_add_admin()
         }
     }
     $my_page = add_theme_page("Options viewer", "Options viewer", 'edit_themes', basename(__FILE__) , array($this, 'mynewtheme_admin'));
-    add_action('load-' . $my_page, 'load_admin_js');
-    add_action( 'admin_print_styles-' . $my_page, 'enqueue_admin_styles' );
+    add_action('load-' . $my_page, array($this, 'load_admin_js'));
+    add_action( 'admin_print_styles-' . $my_page, array($this, 'enqueue_admin_styles') );
 }
 
 // This function is only called when our plugin's page loads!
-function load_admin_js()
+public function load_admin_js()
 {
-    add_action('admin_enqueue_scripts', 'enqueue_admin_js');
+    add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_js'));
 }
 
-function enqueue_admin_js()
+public function enqueue_admin_js()
 {
     wp_enqueue_script('namespaceformyscript', plugins_url('jsoneditor.min.js', __FILE__));
     wp_enqueue_script('optionsTracker', plugins_url('optionsTracker.js', __FILE__));
 
 }
 
-function enqueue_admin_styles(){
+public function enqueue_admin_styles(){
     wp_enqueue_style('namespace', plugins_url('jsoneditor.min.css', __FILE__));
 }
 
-function generateOption($optionName)
+public function generateOption($optionName)
 {
     $option = get_option($optionName, '');
     if (!is_string($option))
@@ -118,7 +118,7 @@ function generateOption($optionName)
           </tr>';
 }
 
-function mynewtheme_admin()
+public function mynewtheme_admin()
 {
 global $themename, $shortname, $options, $spawned_options, $theme_name;
 
@@ -173,7 +173,7 @@ if ($_REQUEST['reset_all'])
             $options = $wpdb->get_results("SELECT * FROM wpd_options WHERE optionPlugin = '" . $category->optionPlugin . "';");
             foreach ($options as $option)
             {
-                echo generateOption($option->option_name);
+                echo $this->generateOption($option->option_name);
             }
         }
         ?>
